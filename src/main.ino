@@ -1,11 +1,8 @@
-#include <Arduino.h>
 
 // DEFINES
 #define LOGIC 1
 #define MOTORS_MAX_PWM_VALUE 150
 #define MOTORS_MIN_PWM_VALUE 0
-#define MAXOUTPUT 150
-
 
 // PIN DEFINITIONS
 const int PIN_LED = 8;           //D8 | Digital 8 | GPIO 14 
@@ -13,22 +10,22 @@ const int PIN_BUTTON = 9;        //D9 | Digital 9 | GPIO 15
 
 // MOTOR RIGHT
 const int PIN_MOTOR_R_PWM = 5;   //D5 | Digital 5 | GPIO 11
-const int PIN_MOTOR_R_1 = 7;     //D6 | Digital 6 | GPIO 12
-const int PIN_MOTOR_R_2 = 6;     //D7 | Digital 7 | GPIO 13
+const int PIN_MOTOR_R_1 = 6;     //D6 | Digital 6 | GPIO 12
+const int PIN_MOTOR_R_2 = 7;     //D7 | Digital 7 | GPIO 13
 
 // MOTOR LEFT
 const int PIN_MOTOR_L_PWM = 3;    //D3 | Digital 3 | GPIO 5
-const int PIN_MOTOR_L_1 = 4;      //D2 | Digital 2 | GPIO 4
-const int PIN_MOTOR_L_2 = 2;      //D4 | Digital 4 | GPIO 6
+const int PIN_MOTOR_L_1 = 2;      //D2 | Digital 2 | GPIO 4
+const int PIN_MOTOR_L_2 = 4;      //D4 | Digital 4 | GPIO 6
 
 // SENSOR PINS
 const int PIN_SENSOR_0 = 11;
-const int PIN_SENSOR_1 = A0;
-const int PIN_SENSOR_2 = A1;
-const int PIN_SENSOR_3 = A2;
-const int PIN_SENSOR_4 = A3;
-const int PIN_SENSOR_5 = A4;
-const int PIN_SENSOR_6 = A5;
+const int PIN_SENSOR_1 = A5;
+const int PIN_SENSOR_2 = A4;
+const int PIN_SENSOR_3 = A3;
+const int PIN_SENSOR_4 = A2;
+const int PIN_SENSOR_5 = A1;
+const int PIN_SENSOR_6 = A0;
 const int PIN_SENSOR_7 = 12;
 
 const int CANT_ANALOG_SENSORS = 6;
@@ -39,10 +36,11 @@ const int CANT_ALL_SENSORS = CANT_ANALOG_SENSORS + CANT_DIGITAL_SENSORS;
 const int PINS_ANALOG_SENSORS[CANT_ANALOG_SENSORS] = {PIN_SENSOR_1, PIN_SENSOR_2, PIN_SENSOR_3, PIN_SENSOR_4, PIN_SENSOR_5, PIN_SENSOR_6};
 const int PINS_DIGITAL_SENSORS[CANT_DIGITAL_SENSORS] = {PIN_SENSOR_0, PIN_SENSOR_7};
 
-const float SPEED_MULTIPLIER_1 = 1 / 1.5;
-const float SPEED_MULTIPLIER_2 = 1 / 2;
-const float SPEED_MULTIPLIER_3 = 1 / 3;
-const float SPEED_MULTIPLIER_4 = 1 / 4;
+const float SPEED_MULTIPLIER_0[2] = {3.0 / 4.0, 3.0 / 4.0};
+const float SPEED_MULTIPLIER_1[2] = {1.0 / 2.0, 3.0 / 4.0};
+const float SPEED_MULTIPLIER_2[2] = {1.0 / 6.0, 3.0 / 4.0};
+const float SPEED_MULTIPLIER_3[2] = {1.0 / 7.0, 5.0 / 4.0};
+const float SPEED_MULTIPLIER_4[2] = {1.0 / 8.0, 2.0};
 
 const unsigned int blinkDelay = 500;
 const unsigned int runDelay = 200;
@@ -50,8 +48,8 @@ const unsigned int runDelay = 200;
 int analogSensorValues[CANT_ANALOG_SENSORS];
 int sensorValues[CANT_ALL_SENSORS];
 
-int motorspeedR;
-int motorspeedL;
+int motorSpeedR;
+int motorSpeedL;
 
 bool state = false;
 bool blink = true;
@@ -61,7 +59,8 @@ unsigned long blinkTimer;
 unsigned long runTimer;
 
 
-void setup() {
+void setup() 
+{
   Serial.begin(9600);
   Serial.println("STARTING SERIAL");
   for(int i{0}; i < 5; i++)
@@ -114,9 +113,9 @@ void printSerialData()
   }
 
   Serial.print(" | Motor Speed L: ");
-  Serial.print(motorspeedL);
+  Serial.print(motorSpeedL);
   Serial.print(" | Motor Speed R: ");
-  Serial.println(motorspeedR);
+  Serial.println(motorSpeedR);
 }
 
 void handleMotorSpeed()
@@ -127,51 +126,59 @@ void handleMotorSpeed()
   digitalWrite(PIN_MOTOR_R_1, LOW);   
   digitalWrite(PIN_MOTOR_R_2, HIGH);  
 
+  motorSpeedL = MOTORS_MAX_PWM_VALUE;
+  motorSpeedR = MOTORS_MAX_PWM_VALUE;
+
   if(sensorValues[0] == 1)
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE * SPEED_MULTIPLIER_4);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE);
+    motorSpeedL *= SPEED_MULTIPLIER_4[0];
+    motorSpeedR *= SPEED_MULTIPLIER_4[1];
   }
   else if(sensorValues[7] == 1)
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE * SPEED_MULTIPLIER_4);
+    motorSpeedL *= SPEED_MULTIPLIER_4[1];
+    motorSpeedR *= SPEED_MULTIPLIER_4[0];
   }
   else if(sensorValues[1] == 1)
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE * SPEED_MULTIPLIER_3);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE);
+    motorSpeedL *= SPEED_MULTIPLIER_3[0];
+    motorSpeedR *= SPEED_MULTIPLIER_3[1];
   }
   else if(sensorValues[6] == 1)
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE * SPEED_MULTIPLIER_3);
+    motorSpeedL *= SPEED_MULTIPLIER_3[1];
+    motorSpeedR *= SPEED_MULTIPLIER_3[0];
   }
   else if(sensorValues[2] == 1)
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE * SPEED_MULTIPLIER_2);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE);
+    motorSpeedL *= SPEED_MULTIPLIER_2[0];
+    motorSpeedR *= SPEED_MULTIPLIER_2[1];
   }
   else if(sensorValues[5] == 1)
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE * SPEED_MULTIPLIER_2);
+    motorSpeedL *= SPEED_MULTIPLIER_2[1];
+    motorSpeedR *= SPEED_MULTIPLIER_2[0];
   }
   else if(sensorValues[3] == 1)
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE * SPEED_MULTIPLIER_1);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE);
+    motorSpeedL *= SPEED_MULTIPLIER_1[0];
+    motorSpeedR *= SPEED_MULTIPLIER_1[1];
   }
   else if(sensorValues[4] == 1)
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE * SPEED_MULTIPLIER_1);
+    motorSpeedL *= SPEED_MULTIPLIER_1[1];
+    motorSpeedR *= SPEED_MULTIPLIER_1[0];
   }
   else
   {
-    analogWrite(PIN_MOTOR_L_PWM, MOTORS_MAX_PWM_VALUE);
-    analogWrite(PIN_MOTOR_R_PWM, MOTORS_MAX_PWM_VALUE);
+    motorSpeedL *= SPEED_MULTIPLIER_0[0];
+    motorSpeedR *= SPEED_MULTIPLIER_0[1];
   }
+
+  motorSpeedL = constrain(motorSpeedL - 20, MOTORS_MIN_PWM_VALUE, MOTORS_MAX_PWM_VALUE);
+  motorSpeedR = constrain(motorSpeedR, MOTORS_MIN_PWM_VALUE, MOTORS_MAX_PWM_VALUE);
+  analogWrite(PIN_MOTOR_L_PWM, motorSpeedL);
+  analogWrite(PIN_MOTOR_R_PWM, motorSpeedR);
 }
 
 void readSensorData()
@@ -201,6 +208,7 @@ void run(unsigned long currentTime)
     printSerialData();
 
     runTimer = currentTime;
+    digitalWrite(PIN_LED, HIGH);
   }
 }
 
@@ -227,10 +235,12 @@ void loop() {
     stop(currentTime);
   }
 
-  if(!button_state && digitalRead(PIN_BUTTON))
+  if(button_state && !digitalRead(PIN_BUTTON))
   {
     state = !state;
+    Serial.println(state ? "RUN" : "STOP");
   }
 
   button_state = digitalRead(PIN_BUTTON);
+  delay(50);
 }
