@@ -1,8 +1,10 @@
 
 // DEFINES
 #define LOGIC 1
-#define MOTORS_MAX_PWM_VALUE 150
+#define MOTORS_MAX_PWM_VALUE 255
 #define MOTORS_MIN_PWM_VALUE 0
+
+const int baseSpeed = 150;
 
 // PIN DEFINITIONS
 const int PIN_LED = 8;           //D8 | Digital 8 | GPIO 14 
@@ -36,14 +38,14 @@ const int CANT_ALL_SENSORS = CANT_ANALOG_SENSORS + CANT_DIGITAL_SENSORS;
 const int PINS_ANALOG_SENSORS[CANT_ANALOG_SENSORS] = {PIN_SENSOR_1, PIN_SENSOR_2, PIN_SENSOR_3, PIN_SENSOR_4, PIN_SENSOR_5, PIN_SENSOR_6};
 const int PINS_DIGITAL_SENSORS[CANT_DIGITAL_SENSORS] = {PIN_SENSOR_0, PIN_SENSOR_7};
 
-const float SPEED_MULTIPLIER_0[2] = {3.0 / 4.0, 3.0 / 4.0};
-const float SPEED_MULTIPLIER_1[2] = {1.0 / 2.0, 3.0 / 4.0};
-const float SPEED_MULTIPLIER_2[2] = {1.0 / 6.0, 3.0 / 4.0};
-const float SPEED_MULTIPLIER_3[2] = {1.0 / 7.0, 5.0 / 4.0};
-const float SPEED_MULTIPLIER_4[2] = {1.0 / 8.0, 2.0};
+const float SPEED_MULTIPLIER_0[2] = {1.15, 1.15};
+const float SPEED_MULTIPLIER_1[2] = {1.0 / 4.0, 1.0};
+const float SPEED_MULTIPLIER_2[2] = {1.0 / 7.0, 1.1};
+const float SPEED_MULTIPLIER_3[2] = {1.0 / 10.0, 1.1};
+const float SPEED_MULTIPLIER_4[2] = {0, 1.5};
 
-const unsigned int blinkDelay = 500;
-const unsigned int runDelay = 200;
+const unsigned int blinkDelay = 490;
+const unsigned int runDelay = 0;
 
 int analogSensorValues[CANT_ANALOG_SENSORS];
 int sensorValues[CANT_ALL_SENSORS];
@@ -57,6 +59,8 @@ bool button_state;
 
 unsigned long blinkTimer;
 unsigned long runTimer;
+
+int memory = 0;
 
 
 void setup() 
@@ -126,53 +130,76 @@ void handleMotorSpeed()
   digitalWrite(PIN_MOTOR_R_1, LOW);   
   digitalWrite(PIN_MOTOR_R_2, HIGH);  
 
-  motorSpeedL = MOTORS_MAX_PWM_VALUE;
-  motorSpeedR = MOTORS_MAX_PWM_VALUE;
+  motorSpeedL = baseSpeed;
+  motorSpeedR = baseSpeed;
 
   if(sensorValues[0] == 1)
   {
     motorSpeedL *= SPEED_MULTIPLIER_4[0];
     motorSpeedR *= SPEED_MULTIPLIER_4[1];
+    memory = -1;
   }
   else if(sensorValues[7] == 1)
   {
     motorSpeedL *= SPEED_MULTIPLIER_4[1];
     motorSpeedR *= SPEED_MULTIPLIER_4[0];
+    memory = 1;
   }
   else if(sensorValues[1] == 1)
   {
     motorSpeedL *= SPEED_MULTIPLIER_3[0];
     motorSpeedR *= SPEED_MULTIPLIER_3[1];
+    memory = 0;
   }
   else if(sensorValues[6] == 1)
   {
     motorSpeedL *= SPEED_MULTIPLIER_3[1];
     motorSpeedR *= SPEED_MULTIPLIER_3[0];
+    memory = 0;
   }
   else if(sensorValues[2] == 1)
   {
     motorSpeedL *= SPEED_MULTIPLIER_2[0];
     motorSpeedR *= SPEED_MULTIPLIER_2[1];
+    memory = 0;
   }
   else if(sensorValues[5] == 1)
   {
     motorSpeedL *= SPEED_MULTIPLIER_2[1];
     motorSpeedR *= SPEED_MULTIPLIER_2[0];
+    memory = 0;
   }
   else if(sensorValues[3] == 1)
   {
     motorSpeedL *= SPEED_MULTIPLIER_1[0];
     motorSpeedR *= SPEED_MULTIPLIER_1[1];
+    memory = 0;
   }
   else if(sensorValues[4] == 1)
   {
     motorSpeedL *= SPEED_MULTIPLIER_1[1];
     motorSpeedR *= SPEED_MULTIPLIER_1[0];
+    memory = 0;
   }
   else
   {
-    motorSpeedL *= SPEED_MULTIPLIER_0[0];
-    motorSpeedR *= SPEED_MULTIPLIER_0[1];
+    if(memory == -1)
+    {
+      motorSpeedL *= SPEED_MULTIPLIER_4[0];
+      motorSpeedR *= SPEED_MULTIPLIER_4[1]; 
+    }
+    else if(memory == 1)
+    {
+      motorSpeedL *= SPEED_MULTIPLIER_4[1];
+      motorSpeedR *= SPEED_MULTIPLIER_4[0]; 
+    }
+    else
+    {
+      motorSpeedL *= SPEED_MULTIPLIER_0[0];
+      motorSpeedR *= SPEED_MULTIPLIER_0[1];
+    }
+    
+
   }
 
   motorSpeedL = constrain(motorSpeedL - 20, MOTORS_MIN_PWM_VALUE, MOTORS_MAX_PWM_VALUE);
@@ -221,6 +248,7 @@ void stop(unsigned int currentTime)
     digitalWrite(PIN_LED, blink);
     blink = !blink;
     blinkTimer = currentTime;
+    memory = 0;
   }
 }
 
@@ -242,5 +270,5 @@ void loop() {
   }
 
   button_state = digitalRead(PIN_BUTTON);
-  delay(50);
+  delay(1);
 }
