@@ -1,7 +1,7 @@
 
 // DEFINES
-#define LOGIC 1
-#define DEBUG 1                           
+#define LOGIC 0
+#define DEBUG 0                         
 #define MOTORS_MAX_PWM_VALUE 255
 #define MOTORS_MIN_PWM_VALUE 35
 
@@ -287,7 +287,7 @@ void readSensorData()
 
 void run(unsigned long currentTime)
 {
-  if(((currentTime - startTimer) >= startDelay || DEBUG))
+  if((currentTime - startTimer) >= startDelay || DEBUG)
   {
     if((currentTime - runTimer) >= runDelay)
     {
@@ -297,14 +297,7 @@ void run(unsigned long currentTime)
       digitalWrite(PIN_LED, HIGH);
     }
 
-    if(onMemory)
-  {
     digitalWrite(PIN_LED, HIGH);
-    }
-    else
-    {
-      digitalWrite(PIN_LED, LOW);
-    }
   }
   else if((blink && currentTime - blinkTimer >= runBlinkDelayHigh) || (!blink && currentTime - blinkTimer >= runBlinkDelayLow))
   {
