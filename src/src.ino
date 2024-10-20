@@ -55,13 +55,13 @@ const int PINS_DIGITAL_SENSORS[CANT_DIGITAL_SENSORS] = {PIN_SENSOR_0, PIN_SENSOR
 // const float SPEED_MULTIPLIER_3[2] = {-80, 140};
 // const float SPEED_MULTIPLIER_4[2] = {-100, 140};
 
-float SPEED_MULTIPLIER_0[2] = {145, 145};
-const float SPEED_MULTIPLIER_1[2] = {80, 130};
-const float SPEED_MULTIPLIER_1_5[2] = {70, 140};
-const float SPEED_MULTIPLIER_2[2] = {60, 140};
-const float SPEED_MULTIPLIER_2_5[2] = {-70, 140};
-const float SPEED_MULTIPLIER_3[2] = {-80, 140};
-const float SPEED_MULTIPLIER_4[2] = {-100, 140};
+float SPEED_MULTIPLIER_0[2] = {80, 80};
+const float SPEED_MULTIPLIER_1[2] = {70, 90};
+const float SPEED_MULTIPLIER_1_5[2] = {60, 100};
+const float SPEED_MULTIPLIER_2[2] = {60, 105};
+const float SPEED_MULTIPLIER_2_5[2] = {-60, 90};
+const float SPEED_MULTIPLIER_3[2] = {-60, 100};
+const float SPEED_MULTIPLIER_4[2] = {-70, 100};
 
 // const float SPEED_MULTIPLIER_0[2] = {220, 220};
 // const float SPEED_MULTIPLIER_1[2] = {120, 180};
@@ -76,7 +76,7 @@ const unsigned int runBlinkDelayHigh = 500;
 const unsigned int runBlinkDelayLow = 500;
 const unsigned int runDelay = 0;
 const unsigned int startDelay = 5000;
-const unsigned int adrenalinaDelay = 3000;
+const unsigned int adrenalinaDelay = 5000;
 
 int analogSensorValues[CANT_ANALOG_SENSORS];
 int sensorValues[CANT_ALL_SENSORS];
@@ -191,7 +191,7 @@ void handleMotorSpeed(unsigned long currentTime)
   {
     motorSpeedL = SPEED_MULTIPLIER_2_5[0];
     motorSpeedR = SPEED_MULTIPLIER_2_5[1];
-    memory = 0;
+    memory = -1;
     adrenalinaTimerRight = 0;
     adrenalinaTimerCenter = 0;
     adrenalinaTimerLeft = 0;
@@ -209,7 +209,7 @@ void handleMotorSpeed(unsigned long currentTime)
   {
     motorSpeedL = SPEED_MULTIPLIER_2_5[1];
     motorSpeedR = SPEED_MULTIPLIER_2_5[0];
-    memory = 0;
+    memory = 1;
     adrenalinaTimerRight = 0;
     adrenalinaTimerCenter = 0;
     adrenalinaTimerLeft = 0;
@@ -288,7 +288,7 @@ void handleMotorSpeed(unsigned long currentTime)
     {
       adrenalinaTimerRight = currentTime;
     }
-}
+  }
   else
   {
     if(memory == -1)
@@ -355,7 +355,7 @@ void handleMotorSpeed(unsigned long currentTime)
     digitalWrite(PIN_MOTOR_L_2, HIGH);
     analogWrite(PIN_MOTOR_L_PWM, 255 - 18);
     analogWrite(PIN_MOTOR_R_PWM, 255);
-    delay(300);
+    delay(1000);
 
     unsigned long timer = millis();
     unsigned long current = millis();
@@ -380,8 +380,8 @@ void handleMotorSpeed(unsigned long currentTime)
       digitalWrite(PIN_MOTOR_R_2, HIGH);
       digitalWrite(PIN_MOTOR_L_1, LOW);   
       digitalWrite(PIN_MOTOR_L_2, HIGH);
-      analogWrite(PIN_MOTOR_L_PWM, 90 - 18);
-      analogWrite(PIN_MOTOR_R_PWM, 90);
+      analogWrite(PIN_MOTOR_L_PWM, 60 - 18);
+      analogWrite(PIN_MOTOR_R_PWM, 60);
       readSensorData();
     }
   }
@@ -470,5 +470,5 @@ void loop() {
   }
 
   button_state = digitalRead(PIN_BUTTON);
-  //delay(1);
+  //delay(1); 
 }
